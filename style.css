@@ -1,0 +1,22 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.nav-item a{
+
+    color: black;
+}
+
+.hhe{
+
+    width: 20%;
+    height: 20px;
+    
+}
+
+.card-body{
+
+    border: none;
+}
