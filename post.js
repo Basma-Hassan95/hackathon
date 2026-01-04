@@ -6,7 +6,8 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   console.log('Supabase Connected');
 
-  // ================= ELEMENTS =================
+ 
+// ================= ELEMENTS =================
 const createPostForm = document.getElementById('createPostForm');
 const modal = document.getElementById('createPostModal');
 const openModalBtn = document.getElementById('openModalBtn');
@@ -14,41 +15,32 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 const postsContainer = document.querySelector('.posts-grid');
 
 // ================= MODAL =================
-openModalBtn.addEventListener('click', () => {
-  modal.classList.add('active');
-});
-
-closeModalBtn.addEventListener('click', () => {
-  modal.classList.remove('active');
-});
-
+openModalBtn.addEventListener('click', () => modal.classList.add('active'));
+closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
 window.addEventListener('click', (e) => {
-  if (e.target === modal) {
-    modal.classList.remove('active');
-  }
+  if (e.target === modal) modal.classList.remove('active');
 });
 
 // ================= CREATE POST =================
 createPostForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const title = document.getElementById('postTitle').value;
-  const content = document.getElementById('postContent').value;
+  const title = document.getElementById('postTitle').value.trim();
+  const content = document.getElementById('postContent').value.trim();
   const imageFile = document.getElementById('postImage').files[0];
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {
+  // ✅ Optional: check user
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+  if (userError || !user) {
     alert('Please login first');
     return;
   }
 
   let imageUrl = null;
 
-  // Upload image
+  // Upload image if provided
   if (imageFile) {
-    const fileName = `${Date.now()}-${imageFile.name}`;
-
+    const fileName = `${Date.now()}-${imageFile.name.replace(/\s/g, '-')}`; // remove spaces
     const { error: uploadError } = await supabaseClient.storage
       .from('post-image')
       .upload(fileName, imageFile);
@@ -58,7 +50,8 @@ createPostForm.addEventListener('submit', async (e) => {
       return;
     }
 
-    imageUrl = `${SUPABASE_URL}/storage/v1/object/public/post-image/${fileName}`;
+    const encodedFileName = encodeURIComponent(fileName);
+    imageUrl = `${SUPABASE_URL}/storage/v1/object/public/post-image/${encodedFileName}`;
   }
 
   // Insert post
@@ -66,21 +59,23 @@ createPostForm.addEventListener('submit', async (e) => {
     .from('posts')
     .insert([
       {
-        user_id: user.id,
-        title: title,
-        content: content,
+        user_id: user.id,  // RLS disabled, par still good practice
+        title,
+        content,
         image_url: imageUrl
       }
     ]);
 
   if (error) {
+    console.log('Insert error:', error);
     alert(error.message);
-  } else {
-    alert('Post created successfully');
-    createPostForm.reset();
-    modal.classList.remove('active');
-    loadPosts();
+    return;
   }
+
+  alert('Post created successfully!');
+  createPostForm.reset();
+  modal.classList.remove('active');
+  loadPosts();
 });
 
 // ================= LOAD POSTS =================
@@ -91,7 +86,7 @@ async function loadPosts() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.log(error);
+    console.log('Load error:', error);
     return;
   }
 
@@ -100,7 +95,7 @@ async function loadPosts() {
   data.forEach((post) => {
     postsContainer.innerHTML += `
       <div class="post-card">
-        ${post.image_url ? `<img src="${post.image_url}" />` : ''}
+        ${post.image_url ? `<img src="${post.image_url}" alt="${post.title}" />` : ''}
         <div class="post-content">
           <h3>${post.title}</h3>
           <p class="post-description">${post.content}</p>
@@ -110,5 +105,22 @@ async function loadPosts() {
   });
 }
 
+
+
+
+
+// ================= DELETE POST =================
+async function deletePost(postId) {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+  
+    const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
+    if (error) {
+      alert('Error deleting post: ' + error.message);
+      return;
+    }
+  
+    alert('Post deleted successfully!');
+    loadPosts();
+  }
 // Initial load
 loadPosts();
