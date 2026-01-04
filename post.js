@@ -110,7 +110,8 @@ async function loadPosts() {
 
 
 // ================= DELETE POST =================
-async function deletePost(postId) {
+// ================== DELETE POST ==================
+window.deletePost = async function(postId) { // ⚠️ make global
     if (!confirm('Are you sure you want to delete this post?')) return;
   
     const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
@@ -121,6 +122,6 @@ async function deletePost(postId) {
   
     alert('Post deleted successfully!');
     loadPosts();
-  }
+  };
 // Initial load
 loadPosts();
