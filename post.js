@@ -6,127 +6,109 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   console.log('Supabase Connected');
 
-  document
-  .getElementById('createPostForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // ================= ELEMENTS =================
+const createPostForm = document.getElementById('createPostForm');
+const modal = document.getElementById('createPostModal');
+const openModalBtn = document.getElementById('openModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const postsContainer = document.querySelector('.posts-grid');
 
-    const title = document.getElementById('title').value;
-    const content = document.getElementById('content').value;
-    const imageFile = document.getElementById('image').files[0];
+// ================= MODAL =================
+openModalBtn.addEventListener('click', () => {
+  modal.classList.add('active');
+});
 
-    // 1️⃣ Get logged in user
-    const {
-      data: { user }
-    } = await supabaseClient.auth.getUser();
+closeModalBtn.addEventListener('click', () => {
+  modal.classList.remove('active');
+});
 
-    if (!user) {
-      alert('Login required');
+window.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    modal.classList.remove('active');
+  }
+});
+
+// ================= CREATE POST =================
+createPostForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('postTitle').value;
+  const content = document.getElementById('postContent').value;
+  const imageFile = document.getElementById('postImage').files[0];
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    alert('Please login first');
+    return;
+  }
+
+  let imageUrl = null;
+
+  // Upload image
+  if (imageFile) {
+    const fileName = `${Date.now()}-${imageFile.name}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from('post-image')
+      .upload(fileName, imageFile);
+
+    if (uploadError) {
+      alert(uploadError.message);
       return;
     }
 
-    let imageUrl = null;
-
-    // 2️⃣ Upload image (optional)
-    if (imageFile) {
-      const fileName = `${Date.now()}-${imageFile.name}`;
-
-      const { error: uploadError } =
-        await supabaseClient.storage
-          .from('post-images')
-          .upload(fileName, imageFile);
-
-      if (uploadError) {
-        alert(uploadError.message);
-        return;
-      }
-
-      imageUrl = `${SUPABASE_URL}/storage/v1/object/public/post-images/${fileName}`;
-    }
-
-    // 3️⃣ Insert post
-    const { error } = await supabaseClient
-      .from('posts')
-      .insert([
-        {
-          user_id: user.id,
-          title,
-          content,
-          image_url: imageUrl
-        }
-      ]);
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert('Post created');
-      location.reload();
-    }
-  });
-
-
-  async function loadPosts() {
-    const { data, error } = await supabaseClient
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
-  
-    if (error) return;
-  
-    const container = document.getElementById('posts');
-  
-    container.innerHTML = '';
-  
-    data.forEach((post) => {
-      container.innerHTML += `
-        <div class="post">
-          <h3>${post.title}</h3>
-          ${post.image_url ? `<img src="${post.image_url}" />` : ''}
-          <p>${post.content}</p>
-          <button onclick="deletePost('${post.id}')">Delete</button>
-        </div>
-      `;
-    });
+    imageUrl = `${SUPABASE_URL}/storage/v1/object/public/post-image/${fileName}`;
   }
-  
-  loadPosts();
- 
- // Get modal elements
- const modal = document.getElementById('createPostModal');
- const openModalBtn = document.getElementById('openModalBtn');
- const closeModalBtn = document.getElementById('closeModalBtn');
- const createPostForm = document.getElementById('createPostForm');
 
- // Open modal
- openModalBtn.addEventListener('click', () => {
-     modal.classList.add('active');
- });
+  // Insert post
+  const { error } = await supabaseClient
+    .from('posts')
+    .insert([
+      {
+        user_id: user.id,
+        title: title,
+        content: content,
+        image_url: imageUrl
+      }
+    ]);
 
- // Close modal
- closeModalBtn.addEventListener('click', () => {
-     modal.classList.remove('active');
- });
+  if (error) {
+    alert(error.message);
+  } else {
+    alert('Post created successfully');
+    createPostForm.reset();
+    modal.classList.remove('active');
+    loadPosts();
+  }
+});
 
- // Close modal when clicking outside
- window.addEventListener('click', (e) => {
-     if (e.target === modal) {
-         modal.classList.remove('active');
-     }
- });
+// ================= LOAD POSTS =================
+async function loadPosts() {
+  const { data, error } = await supabaseClient
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false });
 
- // Handle form submission
- createPostForm.addEventListener('submit', (e) => {
-     e.preventDefault();
-     
-     const title = document.getElementById('postTitle').value;
-     const content = document.getElementById('postContent').value;
-     const image = document.getElementById('postImage').files[0];
-     
-     console.log('Post Created:', { title, content, image });
-     
-     // Close modal and reset form
-     modal.classList.remove('active');
-     createPostForm.reset();
-     
-     alert('Post published successfully!');
- });
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  postsContainer.innerHTML = '';
+
+  data.forEach((post) => {
+    postsContainer.innerHTML += `
+      <div class="post-card">
+        ${post.image_url ? `<img src="${post.image_url}" />` : ''}
+        <div class="post-content">
+          <h3>${post.title}</h3>
+          <p class="post-description">${post.content}</p>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// Initial load
+loadPosts();
