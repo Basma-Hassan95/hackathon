@@ -100,6 +100,7 @@ async function loadPosts() {
           <h3>${post.title}</h3>
           <p class="post-description">${post.content}</p>
           <button onclick="deletePost('${post.id}')">Delete</button>
+          <button onclick="editPost('${post.id}')">Edit</button>
         </div>
       </div>
     `;
@@ -122,6 +123,24 @@ window.deletePost = async function(postId) {
   
     alert('Post deleted successfully!');
     loadPosts();
+  };
+
+  // ================= EDIT POST =================
+window.editPost = async function(postId) {
+    const { data, error } = await supabaseClient.from('posts').select('*').eq('id', postId).single();
+    if (error) {
+      alert('Error fetching post: ' + error.message);
+      return;
+    }
+  
+    document.getElementById('postTitle').value = data.title;
+    document.getElementById('postContent').value = data.content;
+    // image optional
+  
+    editMode = true;
+    editPostId = postId;
+  
+    modal.classList.add('active');
   };
 // Initial load
 loadPosts();
