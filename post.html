@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST App</title>
+    <link rel="stylesheet" href="post.css" />
+</head>
+<body>
+    
+    <!-- Header -->
+    <header class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <span class="logo-icon">📘</span>
+                <span class="logo-text">POST App</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <span class="user-email">user@gmail.com</span>
+            <div class="user-avatar">D</div>
+            <button class="logout-btn">Logout</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="welcome-section">
+            <h1>Welcome back, Demo!</h1>
+            <p>Explore the latest blog posts from our community</p>
+            <button class="create-post-btn" id="openModalBtn">+ Create Post</button>
+        </div>
+
+        <!-- Blog Posts Grid -->
+        <div class="posts-grid">
+            
+            <!-- Post 1 -->
+            <div class="post-card">
+                <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600" alt="Web Development">
+                <div class="post-content">
+                    <h3>Getting Started with Modern Web Development</h3>
+                    <p class="post-meta">By Sarah Johnson • Oct 15, 2023</p>
+                    <p class="post-description">Learn the fundamentals of building modern web applications with React and TypeScript. This comprehensive guide covers everything...</p>
+                    <a href="#" class="read-more">→</a>
+                </div>
+            </div>
+
+            <!-- Post 2 -->
+            <div class="post-card">
+                <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600" alt="Clean Code">
+                <div class="post-content">
+                    <h3>The Art of Writing Clean Code</h3>
+                    <p class="post-meta">By Michael Chen • Oct 12, 2023</p>
+                    <p class="post-description">Discover best practices for writing maintainable and scalable code. Clean code is not just about making it work, but making it easy to...</p>
+                    <a href="#" class="read-more">→</a>
+                </div>
+            </div>
+
+            <!-- Post 3 -->
+            <div class="post-card">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600" alt="Nature Photography">
+                <div class="post-content">
+                    <h3>Exploring Nature Through Photography</h3>
+                    <p class="post-meta">By Emma Wilson • Oct 10, 2023</p>
+                    <p class="post-description">Join me on a journey through breathtaking landscapes and discover how photography can help us appreciate the beauty of nature in new...</p>
+                    <a href="#" class="read-more">→</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>Create New Post</h2>
+                    <p class="modal-subtitle">Share your thoughts with the community</p>
+                </div>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label for="postTitle">Title</label>
+                    <input type="text" id="postTitle" placeholder="Enter post title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="postImage">Image</label>
+                    <input type="file" id="postImage" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="postContent">Content</label>
+                    <textarea id="postContent" rows="6" placeholder="Write your post content..." required></textarea>
+                </div>
+
+                <button type="submit" class="publish-btn">Publish Post</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="post.js"></script>
+</body>
+</html>
