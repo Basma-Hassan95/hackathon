@@ -99,6 +99,7 @@ async function loadPosts() {
         <div class="post-content">
           <h3>${post.title}</h3>
           <p class="post-description">${post.content}</p>
+          <button onclick="deletePost('${post.id}')">Delete</button>
         </div>
       </div>
     `;
@@ -110,8 +111,7 @@ async function loadPosts() {
 
 
 // ================= DELETE POST =================
-// ================== DELETE POST ==================
-window.deletePost = async function(postId) { // ⚠️ make global
+window.deletePost = async function(postId) {
     if (!confirm('Are you sure you want to delete this post?')) return;
   
     const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
